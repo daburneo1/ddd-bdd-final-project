@@ -114,8 +114,6 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(new_product.name, product.name)
         self.assertEqual(new_product.description, product.description)
         self.assertEqual(Decimal(new_product.price), product.price)
-        # self.assertEqual(new_product.available, product.available)
-        # self.assertEqual(new_product.category, product.category)
 
     def test_update_a_product(self):
         """It should update a product in the database"""
