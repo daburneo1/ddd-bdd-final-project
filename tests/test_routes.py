@@ -284,3 +284,13 @@ class TestProductRoutes(TestCase):
         """It should return a 405 error"""
         with self.assertRaises(AttributeError):
             Product.find_by_id(1)
+
+    def test_read_a_product(self):
+        """It should read a product from the database"""
+        product = ProductFactory()
+        product.create()
+        new_product = Product.find(product.id)
+        self.assertEqual(new_product.id, product.id)
+        self.assertEqual(new_product.name, product.name)
+        self.assertEqual(new_product.description, product.description)
+        self.assertEqual(Decimal(new_product.price), product.price)
