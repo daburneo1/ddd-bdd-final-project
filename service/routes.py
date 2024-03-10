@@ -173,44 +173,35 @@ def delete_products(product_id):
     return "", status.HTTP_204_NO_CONTENT
 
 ######################################################################
-# L I S T   P R O D U C T S   B Y   N A M E
+# L I S T   P R O D U C T S
 ######################################################################
-
 @app.route("/products", methods=["GET"])
-def list_products_by_name():
-    """Returns all of the Products"""
-    app.logger.info("Request to list all products...")
+def list_products():
+    """Returns a list of Products"""
+    app.logger.info("Request to list Products...")
+
+    products = []
     name = request.args.get("name")
-    products = Product.find_by_name(name)
-    results = [product.serialize() for product in products]
-    app.logger.info("Returning %d products", len(results))
-    return jsonify(results), status.HTTP_200_OK
-
-######################################################################
-# L I S T   P R O D U C T S   B Y   C A T E G O R Y
-######################################################################
-
-@app.route("/products", methods=["GET"])
-def list_products_by_category():
-    """Returns all of the Products"""
-    app.logger.info("Request to list all products...")
     category = request.args.get("category")
-    products = Product.find_by_category(category)
-    results = [product.serialize() for product in products]
-    app.logger.info("Returning %d products", len(results))
-    return jsonify(results), status.HTTP_200_OK
-
-######################################################################
-# L I S T   P R O D U C T S   B Y   A I V A L I B I L I T Y
-######################################################################
-
-@app.route("/products", methods=["GET"])
-def list_products_by_availability():
-    """Returns all of the Products"""
-    app.logger.info("Request to list all products...")
     available = request.args.get("available")
-    products = Product.find_by_availability(available)
-    results = [product.serialize() for product in products]
-    app.logger.info("Returning %d products", len(results))
-    return jsonify(results), status.HTTP_200_OK
 
+    if name:
+        app.logger.info("Find by name: %s", name)
+        products = Product.find_by_name(name)
+    elif category:
+        app.logger.info("Find by category: %s", category)
+        # create enum from string
+        category_value = getattr(category, category.upper())
+        products = Product.find_by_category(category_value)
+    elif available:
+        app.logger.info("Find by available: %s", available)
+        # create bool from string
+        available_value = available.lower() in ["true", "yes", "1"]
+        products = Product.find_by_availability(available_value)
+    else:
+        app.logger.info("Find all")
+        products = Product.all()
+
+    results = [product.serialize() for product in products]
+    app.logger.info("[%s] Products returned", len(results))
+    return results, status.HTTP_200_OK
