@@ -98,31 +98,119 @@ def create_products():
 # L I S T   A L L   P R O D U C T S
 ######################################################################
 
-#
-# PLACE YOUR CODE TO LIST ALL PRODUCTS HERE
-#
+@app.route("/products", methods=["GET"])
+def list_products():
+    """Returns all of the Products"""
+    app.logger.info("Request to list all products...")
+    products = []
+    name = request.args.get("name")
+    if name:
+        app.logger.info("Filtering by name: %s", name)
+        products = Product.find_by_name(name)
+    else:
+        products = Product.all()
+
+    results = [product.serialize() for product in products]
+    app.logger.info("Returning %d products", len(results))
+    return jsonify(results), status.HTTP_200_OK
 
 ######################################################################
 # R E A D   A   P R O D U C T
 ######################################################################
 
-#
-# PLACE YOUR CODE HERE TO READ A PRODUCT
-#
+@app.route("/products/<int:product_id>", methods=["GET"])
+def get_products(product_id):
+    """
+    Retrieve a single Product
+    This endpoint will return a Product based on it's id
+    """
+    app.logger.info("Request to Read a product with id [%s] ...", product_id)
+    product = Product.find(product_id)
+    if not product:
+        abort(status.HTTP_404_NOT_FOUND, f"Product with id {product_id} was not found")
+    app.logger.info("Returning product: %s", product)
+    return jsonify(product.serialize()), status.HTTP_200_OK
 
 ######################################################################
 # U P D A T E   A   P R O D U C T
 ######################################################################
 
-#
-# PLACE YOUR CODE TO UPDATE A PRODUCT HERE
-#
+
+@app.route("/products/<int:product_id>", methods=["PUT"])
+def update_products(product_id):
+    """
+    Update a Product
+    This endpoint will update a Product based the body that is posted
+    """
+    app.logger.info("Request to Update a product with id [%s] ...", product_id)
+    check_content_type("application/json")
+    product = Product.find(product_id)
+    if not product:
+        abort(status.HTTP_404_NOT_FOUND, f"Product with id {product_id} was not found")
+
+    data = request.get_json()
+    app.logger.info("Processing %s", data)
+    product.deserialize(data)
+    product.id = product_id
+    product.update()
+    return jsonify(product.serialize()), status.HTTP_200_OK
 
 ######################################################################
 # D E L E T E   A   P R O D U C T
 ######################################################################
 
 
-#
-# PLACE YOUR CODE TO DELETE A PRODUCT HERE
-#
+@app.route("/products/<int:product_id>", methods=["DELETE"])
+def delete_products(product_id):
+    """
+    Delete a Product
+    This endpoint will delete a Product based the id specified in the path
+    """
+    app.logger.info("Request to Delete a product with id [%s] ...", product_id)
+    product = Product.find(product_id)
+    if product:
+        product.delete()
+    return "", status.HTTP_204_NO_CONTENT
+
+######################################################################
+# L I S T   P R O D U C T S   B Y   N A M E
+######################################################################
+
+@app.route("/products", methods=["GET"])
+def list_products_by_name():
+    """Returns all of the Products"""
+    app.logger.info("Request to list all products...")
+    name = request.args.get("name")
+    products = Product.find_by_name(name)
+    results = [product.serialize() for product in products]
+    app.logger.info("Returning %d products", len(results))
+    return jsonify(results), status.HTTP_200_OK
+
+######################################################################
+# L I S T   P R O D U C T S   B Y   C A T E G O R Y
+######################################################################
+
+@app.route("/products", methods=["GET"])
+def list_products_by_category():
+    """Returns all of the Products"""
+    app.logger.info("Request to list all products...")
+    category = request.args.get("category")
+    products = Product.find_by_category(category)
+    results = [product.serialize() for product in products]
+    app.logger.info("Returning %d products", len(results))
+    return jsonify(results), status.HTTP_200_OK
+
+######################################################################
+# L I S T   P R O D U C T S   B Y   A I V A L I B I L I T Y
+######################################################################
+
+@app.route("/products", methods=["GET"])
+def list_products_by_availability():
+    """Returns all of the Products"""
+    app.logger.info("Request to list all products...")
+    available = request.args.get("available")
+    products = Product.find_by_availability(available)
+    results = [product.serialize() for product in products]
+    app.logger.info("Returning %d products", len(results))
+    return jsonify(results), status.HTTP_200_OK
+
